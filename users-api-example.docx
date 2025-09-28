@@ -181,6 +181,150 @@ Response:
 }
 
 
+GET /roles
+Description: Lấy danh sách roles với pagination và search
+GET /roles?page=1&limit=10&search=admin
+Response:
+{
+  "success": true,
+  "message": "Roles retrieved successfully",
+  "data": {
+    "roles": [
+      {
+        "role_id": 1,
+        "role_name": "admin",
+        "description": "System administrator role",
+        "user_count": 5,
+        "created_at": "2025-01-01T00:00:00Z"
+      },
+      {
+        "role_id": 2,
+        "role_name": "customer",
+        "description": "Regular customer role",
+        "user_count": 1250,
+        "created_at": "2025-01-01T00:00:00Z"
+      }
+    ],
+    "pagination": {
+      "current_page": 1,
+      "total_pages": 3,
+      "total_records": 25,
+      "limit": 10
+    }
+  }
+}
+
+
+GET /roles/:id
+Description: Lấy thông tin chi tiết role
+GET /roles/1
+Response:
+{
+  "success": true,
+  "message": "Role retrieved successfully",
+  "data": {
+    "role_id": 1,
+    "role_name": "admin",
+    "description": "System administrator role",
+    "user_count": 5,
+    "created_at": "2025-01-01T00:00:00Z",
+    "updated_at": "2025-09-28T10:30:00Z"
+  }
+}
+
+
+POST /roles
+Description: Tạo role mới
+POST /roles
+Content-Type: application/json
+{
+  "role_name": "branch_manager",
+  "description": "Branch manager role with elevated privileges"
+}
+Response:
+{
+  "success": true,
+  "message": "Role created successfully",
+  "data": {
+    "role_id": 6,
+    "role_name": "branch_manager",
+    "description": "Branch manager role with elevated privileges",
+    "user_count": 0,
+    "created_at": "2025-09-28T10:30:00Z"
+  }
+}
+
+
+PUT /roles/:id
+Description: Cập nhật thông tin role
+PUT /roles/6
+Content-Type: application/json
+{
+  "role_name": "branch_supervisor",
+  "description": "Branch supervisor role with management access"
+}
+Response:
+{
+  "success": true,
+  "message": "Role updated successfully",
+  "data": {
+    "role_id": 6,
+    "role_name": "branch_supervisor",
+    "description": "Branch supervisor role with management access",
+    "user_count": 0,
+    "updated_at": "2025-09-28T10:30:00Z"
+  }
+}
+
+
+DELETE /roles/:id
+Description: Xóa role
+DELETE /roles/6
+Response:
+{
+  "success": true,
+  "message": "Role deleted successfully",
+  "data": {
+    "role_id": 6,
+    "deleted_at": "2025-09-28T10:30:00Z"
+  }
+}
+
+
+GET /roles/:id/users
+Description: Lấy danh sách users có role này
+GET /roles/1/users?page=1&limit=5
+Response:
+{
+  "success": true,
+  "message": "Users with role retrieved successfully",
+  "data": {
+    "role_id": 1,
+    "role_name": "admin",
+    "users": [
+      {
+        "user_id": 1,
+        "username": "admin_user",
+        "email": "admin@bank.com",
+        "created_at": "2025-01-01T00:00:00Z"
+      },
+      {
+        "user_id": 15,
+        "username": "system_admin",
+        "email": "sysadmin@bank.com",
+        "created_at": "2025-01-15T08:30:00Z"
+      }
+    ],
+    "pagination": {
+      "current_page": 1,
+      "total_pages": 1,
+      "total_records": 5,
+      "limit": 5
+    }
+  }
+}
+
+
 
 Error Response Examples
 404 - User Not Found:
@@ -200,5 +344,35 @@ Error Response Examples
   "error": {
     "code": "VALIDATION_ERROR",
     "message": "Username already exists"
+  }
+}
+
+409 - Role Name Already Exists:
+{
+  "success": false,
+  "message": "Role name already exists",
+  "error": {
+    "code": "ROLE_NAME_EXISTS",
+    "message": "Role with name 'customer' already exists"
+  }
+}
+
+409 - Cannot Delete Role (Users Assigned):
+{
+  "success": false,
+  "message": "Cannot delete role",
+  "error": {
+    "code": "ROLE_IN_USE",
+    "message": "Cannot delete role 'customer' - 1250 users are assigned to this role"
+  }
+}
+
+404 - Role Not Found:
+{
+  "success": false,
+  "message": "Role not found",
+  "error": {
+    "code": "ROLE_NOT_FOUND",
+    "message": "Role with ID 999 does not exist"
   }
 }
