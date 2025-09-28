@@ -1,0 +1,313 @@
+erDiagram
+    AUTH_USERS {
+        int user_id PK
+        varchar username UK
+        varchar email UK
+        timestamp created_at
+    }
+    AUTH_USER_CREDENTIALS {
+        int user_id PK,FK
+        varchar password_hash
+        timestamp last_changed
+    }
+    AUTH_USER_ROLES {
+        int role_id PK
+        varchar role_name
+    }
+    AUTH_USER_ROLE_MAPPING {
+        int user_id PK,FK
+        int role_id PK,FK
+    }
+    AUTH_USER_SESSIONS {
+        uuid session_id PK
+        int user_id FK
+        timestamp issued_at
+        timestamp expires_at
+    }
+    ACCOUNT_ACCOUNTS {
+        int account_id PK
+        int user_id FK
+        numeric balance
+        varchar status
+    }
+    ACCOUNT_CARDS {
+        int card_id PK
+        int account_id FK
+        varchar card_number UK
+        date expiry_date
+        varchar status
+    }
+    ACCOUNT_BENEFICIARIES {
+        int beneficiary_id PK
+        int user_id FK
+        varchar beneficiary_name
+        varchar account_number
+        varchar bank_code FK
+    }
+    TRANSACTION_TRANSACTIONS {
+        int tx_id PK
+        int account_id FK
+        numeric amount
+        varchar tx_type
+        timestamp created_at
+        varchar status
+    }
+    TRANSACTION_LIMITS {
+        int account_id PK,FK
+        numeric daily_limit
+        numeric monthly_limit
+    }
+    TRANSACTION_FEE_CONFIGS {
+        int fee_id PK
+        varchar tx_type
+        numeric fee_amount
+    }
+    NOTIFICATION_NOTIFICATIONS {
+        int notification_id PK
+        int user_id FK
+        text content
+        timestamp sent_at
+    }
+    NOTIFICATION_TEMPLATES {
+        int template_id PK
+        varchar template_name
+        text content
+    }
+    NOTIFICATION_USER_PREFERENCES {
+        int user_id PK,FK
+        bool email_enabled
+        bool sms_enabled
+    }
+    REFERENCE_BANKS {
+        varchar bank_code PK
+        varchar bank_name
+    }
+    REFERENCE_BRANCHES {
+        int branch_id PK
+        varchar bank_code FK
+        varchar branch_name
+    }
+    REFERENCE_PRODUCT_CATALOG {
+        int product_id PK
+        varchar product_name
+        text description
+    }
+    AUDIT_LOGS {
+        int audit_id PK
+        int user_id
+        varchar action
+        varchar entity
+        int entity_id
+        timestamp created_at
+    }
+    AUDIT_TRANSACTION_AUDIT {
+        int tx_audit_id PK
+        int tx_id
+        varchar action
+        text old_value
+        text new_value
+        timestamp changed_at
+    }
+    AUDIT_SECURITY_EVENTS {
+        int event_id PK
+        int user_id
+        varchar event_type
+        varchar ip_address
+        timestamp created_at
+    }
+    AUDIT_DATA_CHANGES {
+        int change_id PK
+        varchar table_name
+        int record_id
+        text change_summary
+        timestamp changed_at
+    }
+    AUTH_USERS ||--|| AUTH_USER_CREDENTIALS : "has"
+    AUTH_USERS ||--o{ AUTH_USER_ROLE_MAPPING : "assigned"
+    AUTH_USER_ROLES ||--o{ AUTH_USER_ROLE_MAPPING : "maps"
+    AUTH_USERS ||--o{ AUTH_USER_SESSIONS : "creates"
+    AUTH_USERS ||--o{ ACCOUNT_ACCOUNTS : "owns"
+    ACCOUNT_ACCOUNTS ||--o{ ACCOUNT_CARDS : "has"
+    AUTH_USERS ||--o{ ACCOUNT_BENEFICIARIES : "manages"
+    REFERENCE_BANKS ||--o{ ACCOUNT_BENEFICIARIES : "references"
+    ACCOUNT_ACCOUNTS ||--o{ TRANSACTION_TRANSACTIONS : "performs"
+    ACCOUNT_ACCOUNTS ||--|| TRANSACTION_LIMITS : "has"
+    AUTH_USERS ||--o{ NOTIFICATION_NOTIFICATIONS : "receives"
+    AUTH_USERS ||--|| NOTIFICATION_USER_PREFERENCES : "configures"
+    REFERENCE_BANKS ||--o{ REFERENCE_BRANCHES : "has"
+
+
+
+
+
+    
+
+
+//////////////////////////////////////////////////
+// SCHEMA: AUTH
+//////////////////////////////////////////////////
+Table auth.users {
+  user_id int [pk, increment]
+  username varchar(50) [unique, not null]
+  email varchar(100) [unique, not null]
+  created_at timestamp
+}
+
+Table auth.user_credentials {
+  user_id int [pk, ref: > auth.users.user_id]
+  password_hash varchar(255)
+  last_changed timestamp
+}
+
+Table auth.user_roles {
+  role_id int [pk, increment]
+  role_name varchar(50)
+}
+
+Table auth.user_role_mapping {
+  user_id int [ref: > auth.users.user_id]
+  role_id int [ref: > auth.user_roles.role_id]
+  indexes {
+    (user_id, role_id) [pk]
+  }
+}
+
+Table auth.user_sessions {
+  session_id uuid [pk]
+  user_id int [ref: > auth.users.user_id]
+  issued_at timestamp
+  expires_at timestamp
+}
+
+//////////////////////////////////////////////////
+// SCHEMA: ACCOUNT
+//////////////////////////////////////////////////
+Table account.accounts {
+  account_id int [pk, increment]
+  user_id int [ref: > auth.users.user_id]
+  balance numeric
+  status varchar(20)
+}
+
+Table account.cards {
+  card_id int [pk, increment]
+  account_id int [ref: > account.accounts.account_id]
+  card_number varchar(20) [unique]
+  expiry_date date
+  status varchar(20)
+}
+
+Table account.beneficiaries {
+  beneficiary_id int [pk, increment]
+  user_id int [ref: > auth.users.user_id]
+  beneficiary_name varchar(100)
+  account_number varchar(20)
+  bank_code varchar(10) [ref: > reference.banks.bank_code]
+}
+
+//////////////////////////////////////////////////
+// SCHEMA: TRANSACTION
+//////////////////////////////////////////////////
+Table transaction.transactions {
+  tx_id int [pk, increment]
+  account_id int [ref: > account.accounts.account_id]
+  amount numeric
+  tx_type varchar(20)
+  created_at timestamp
+  status varchar(20)
+}
+
+Table transaction.transaction_limits {
+  account_id int [pk, ref: > account.accounts.account_id]
+  daily_limit numeric
+  monthly_limit numeric
+}
+
+Table transaction.fee_configurations {
+  fee_id int [pk, increment]
+  tx_type varchar(20)
+  fee_amount numeric
+}
+
+//////////////////////////////////////////////////
+// SCHEMA: NOTIFICATION
+//////////////////////////////////////////////////
+Table notification.notifications {
+  notification_id int [pk, increment]
+  user_id int [ref: > auth.users.user_id]
+  content text
+  sent_at timestamp
+}
+
+Table notification.templates {
+  template_id int [pk, increment]
+  template_name varchar(100)
+  content text
+}
+
+Table notification.user_preferences {
+  user_id int [pk, ref: > auth.users.user_id]
+  email_enabled bool
+  sms_enabled bool
+}
+
+//////////////////////////////////////////////////
+// SCHEMA: REFERENCE
+//////////////////////////////////////////////////
+Table reference.banks {
+  bank_code varchar(10) [pk]
+  bank_name varchar(100)
+}
+
+Table reference.branches {
+  branch_id int [pk, increment]
+  bank_code varchar(10) [ref: > reference.banks.bank_code]
+  branch_name varchar(100)
+}
+
+Table reference.product_catalog {
+  product_id int [pk, increment]
+  product_name varchar(100)
+  description text
+}
+
+
+
+
+
+//////////////////////////////////////////////////
+// SCHEMA: AUDIT (separate DB)
+//////////////////////////////////////////////////
+Table audit.audit_logs {
+  audit_id int [pk, increment]
+  user_id int
+  action varchar(100)
+  entity varchar(50)
+  entity_id int
+  created_at timestamp
+}
+
+Table audit.transaction_audit {
+  tx_audit_id int [pk, increment]
+  tx_id int
+  action varchar(50)
+  old_value text
+  new_value text
+  changed_at timestamp
+}
+
+Table audit.security_events {
+  event_id int [pk, increment]
+  user_id int
+  event_type varchar(50)
+  ip_address varchar(50)
+  created_at timestamp
+}
+
+Table audit.data_changes {
+  change_id int [pk, increment]
+  table_name varchar(100)
+  record_id int
+  change_summary text
+  changed_at timestamp
+}
