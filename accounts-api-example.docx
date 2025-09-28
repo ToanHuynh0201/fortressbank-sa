@@ -1,0 +1,214 @@
+GET /accounts
+Description: Lấy danh sách tài khoản với filtering
+GET /accounts?user_id=123&status=active&page=1&limit=10
+Response:
+{
+  "success": true,
+  "message": "Accounts retrieved successfully",
+  "data": {
+    "accounts": [
+      {
+        "account_id": 1001,
+        "user_id": 123,
+        "account_number": "1234567890",
+        "account_type": "savings",
+        "balance": 1500000.00,
+        "currency": "VND",
+        "status": "active",
+        "created_at": "2025-01-01T00:00:00Z"
+      }
+    ],
+    "pagination": {
+      "current_page": 1,
+      "total_pages": 3,
+      "total_records": 25,
+      "limit": 10
+    }
+  }
+}
+
+
+GET /accounts/:id
+Description: Lấy thông tin chi tiết tài khoản
+GET /accounts/1001
+Response:
+{
+  "success": true,
+  "message": "Account retrieved successfully",
+  "data": {
+    "account_id": 1001,
+    "user_id": 123,
+    "account_number": "1234567890",
+    "account_type": "savings",
+    "balance": 1500000.00,
+    "currency": "VND",
+    "status": "active",
+    "created_at": "2025-01-01T00:00:00Z",
+    "updated_at": "2025-09-28T10:30:00Z",
+    "user_info": {
+      "username": "john_doe",
+      "email": "john@example.com"
+    }
+  }
+}
+
+
+POST /accounts
+Description: Tạo tài khoản mới
+POST /accounts
+Content-Type: application/json
+{
+  "user_id": 124,
+  "account_type": "savings", 
+  "currency": "VND",
+  "initial_balance": 100000
+}
+Response:
+{
+  "success": true,
+  "message": "Account created successfully",
+  "data": {
+    "account_id": 1002,
+    "user_id": 124,
+    "account_number": "1234567891",
+    "account_type": "savings",
+    "balance": 100000.00,
+    "currency": "VND",
+    "status": "active",
+    "created_at": "2025-09-28T10:30:00Z"
+  }
+}
+
+
+PATCH /accounts/:id
+Description: Cập nhật trạng thái tài khoản
+PATCH /accounts/1001
+Content-Type: application/json
+{
+  "status": "suspended"
+}
+Response:
+{
+  "success": true,
+  "message": "Account updated successfully",
+  "data": {
+    "account_id": 1001,
+    "status": "suspended",
+    "updated_at": "2025-09-28T10:30:00Z"
+  }
+}
+
+GET /accounts/:id/balance
+Description: Lấy số dư tài khoản
+GET /accounts/1001/balance
+Response:
+{
+  "success": true,
+  "message": "Balance retrieved successfully",
+  "data": {
+    "account_id": 1001,
+    "balance": 1500000.00,
+    "currency": "VND",
+    "available_balance": 1500000.00,
+    "as_of": "2025-09-28T10:30:00Z"
+  }
+}
+
+
+GET /accounts/:id/cards
+Description: Lấy danh sách thẻ của tài khoản
+GET /accounts/1001/cards
+Response:
+{
+  "success": true,
+  "message": "Cards retrieved successfully",
+  "data": {
+    "account_id": 1001,
+    "cards": [
+      {
+        "card_id": 2001,
+        "card_number": "**** **** **** 1234",
+        "card_type": "debit",
+        "status": "active",
+        "expiry_date": "2029-12-31",
+        "created_at": "2025-01-01T00:00:00Z"
+      }
+    ]
+  }
+}
+
+
+POST /accounts/:id/cards
+Description: Tạo thẻ mới cho tài khoản
+POST /accounts/1001/cards
+Content-Type: application/json
+{
+  "card_type": "debit",
+  "expiry_years": 5
+}
+Response:
+{
+  "success": true,
+  "message": "Card created successfully",
+  "data": {
+    "card_id": 2002,
+    "account_id": 1001,
+    "card_number": "**** **** **** 5678",
+    "card_type": "debit",
+    "status": "active",
+    "expiry_date": "2030-09-28",
+    "created_at": "2025-09-28T10:30:00Z"
+  }
+}
+
+
+GET /users/:userId/beneficiaries
+Description: Lấy danh sách người thụ hưởng của user
+GET /users/123/beneficiaries
+Response:
+{
+  "success": true,
+  "message": "Beneficiaries retrieved successfully",
+  "data": {
+    "user_id": 123,
+    "beneficiaries": [
+      {
+        "beneficiary_id": 3001,
+        "beneficiary_name": "Jane Smith",
+        "account_number": "9876543210",
+        "bank_code": "VCB",
+        "bank_name": "Vietcombank",
+        "nickname": "Sister Jane",
+        "created_at": "2025-01-15T00:00:00Z"
+      }
+    ]
+  }
+}
+
+
+POST /users/:userId/beneficiaries
+Description: Thêm người thụ hưởng mới
+POST /users/123/beneficiaries
+Content-Type: application/json
+
+{
+  "beneficiary_name": "Alice Johnson",
+  "account_number": "1122334455",
+  "bank_code": "TCB",
+  "nickname": "Alice"
+}
+Response:
+{
+  "success": true,
+  "message": "Beneficiary added successfully",
+  "data": {
+    "beneficiary_id": 3002,
+    "user_id": 123,
+    "beneficiary_name": "Alice Johnson",
+    "account_number": "1122334455",
+    "bank_code": "TCB",
+    "bank_name": "Techcombank",
+    "nickname": "Alice",
+    "created_at": "2025-09-28T10:30:00Z"
+  }
+}

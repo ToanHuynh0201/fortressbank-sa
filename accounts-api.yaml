@@ -1,0 +1,380 @@
+openapi: 3.0.3
+info:
+    title: Account Service API
+    version: 1.0.0
+    description: Account management service for banking system
+servers:
+    - url: https://api.bank.com/account-service/v1
+paths:
+    /accounts:
+        get:
+            summary: Danh sách tài khoản
+            parameters:
+                - name: user_id
+                  in: query
+                  schema:
+                      type: integer
+                - name: status
+                  in: query
+                  schema:
+                      type: string
+                      enum: [active, inactive, suspended, closed]
+                - name: page
+                  in: query
+                  schema:
+                      type: integer
+                      default: 1
+                - name: limit
+                  in: query
+                  schema:
+                      type: integer
+                      default: 20
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ApiResponse"
+        post:
+            summary: Tạo tài khoản mới
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/NewAccount"
+            responses:
+                "201":
+                    description: Created
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ApiResponse"
+                "400":
+                    description: Bad Request
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ApiResponse"
+
+    /accounts/{id}:
+        get:
+            summary: Chi tiết tài khoản
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                      type: integer
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ApiResponse"
+                "404":
+                    description: Not Found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ApiResponse"
+        patch:
+            summary: Cập nhật tài khoản
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                      type: integer
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/UpdateAccount"
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ApiResponse"
+
+    /accounts/{id}/balance:
+        get:
+            summary: Lấy số dư
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                      type: integer
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ApiResponse"
+
+    /accounts/{id}/cards:
+        get:
+            summary: Danh sách thẻ của tài khoản
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                      type: integer
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ApiResponse"
+        post:
+            summary: Tạo thẻ mới cho tài khoản
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                      type: integer
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/NewCard"
+            responses:
+                "201":
+                    description: Created
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ApiResponse"
+
+    /cards/{cardId}:
+        get:
+            summary: Chi tiết thẻ
+            parameters:
+                - name: cardId
+                  in: path
+                  required: true
+                  schema:
+                      type: integer
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ApiResponse"
+        patch:
+            summary: Cập nhật trạng thái thẻ
+            parameters:
+                - name: cardId
+                  in: path
+                  required: true
+                  schema:
+                      type: integer
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/UpdateCard"
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ApiResponse"
+
+    /users/{userId}/beneficiaries:
+        get:
+            summary: Danh sách người thụ hưởng của user
+            parameters:
+                - name: userId
+                  in: path
+                  required: true
+                  schema:
+                      type: integer
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ApiResponse"
+        post:
+            summary: Thêm người thụ hưởng
+            parameters:
+                - name: userId
+                  in: path
+                  required: true
+                  schema:
+                      type: integer
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/NewBeneficiary"
+            responses:
+                "201":
+                    description: Created
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ApiResponse"
+
+    /beneficiaries/{beneficiaryId}:
+        get:
+            summary: Chi tiết người thụ hưởng
+            parameters:
+                - name: beneficiaryId
+                  in: path
+                  required: true
+                  schema:
+                      type: integer
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ApiResponse"
+        patch:
+            summary: Cập nhật người thụ hưởng
+            parameters:
+                - name: beneficiaryId
+                  in: path
+                  required: true
+                  schema:
+                      type: integer
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/UpdateBeneficiary"
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ApiResponse"
+        delete:
+            summary: Xóa người thụ hưởng
+            parameters:
+                - name: beneficiaryId
+                  in: path
+                  required: true
+                  schema:
+                      type: integer
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ApiResponse"
+
+components:
+    schemas:
+        ApiResponse:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                message:
+                    type: string
+                data:
+                    type: object
+                error:
+                    type: object
+                    properties:
+                        code:
+                            type: string
+                        message:
+                            type: string
+
+        NewAccount:
+            type: object
+            required: [user_id, account_type, currency]
+            properties:
+                user_id:
+                    type: integer
+                account_type:
+                    type: string
+                    enum: [savings, checking, investment]
+                currency:
+                    type: string
+                    default: VND
+                initial_balance:
+                    type: number
+                    default: 0
+
+        UpdateAccount:
+            type: object
+            properties:
+                status:
+                    type: string
+                    enum: [active, inactive, suspended, closed]
+
+        NewCard:
+            type: object
+            required: [card_type]
+            properties:
+                card_type:
+                    type: string
+                    enum: [debit, credit]
+                expiry_years:
+                    type: integer
+                    default: 5
+
+        UpdateCard:
+            type: object
+            properties:
+                status:
+                    type: string
+                    enum: [active, blocked, expired, cancelled]
+
+        NewBeneficiary:
+            type: object
+            required: [beneficiary_name, account_number, bank_code]
+            properties:
+                beneficiary_name:
+                    type: string
+                account_number:
+                    type: string
+                bank_code:
+                    type: string
+                nickname:
+                    type: string
+
+        UpdateBeneficiary:
+            type: object
+            properties:
+                beneficiary_name:
+                    type: string
+                nickname:
+                    type: string
+
+    securitySchemes:
+        OAuth2:
+            type: oauth2
+            flows:
+                authorizationCode:
+                    authorizationUrl: https://auth.bank.com/oauth/authorize
+                    tokenUrl: https://auth.bank.com/oauth/token
+                    scopes:
+                        account:read: Read account information
+                        account:write: Create and update accounts
+                        account:manage: Full account management access
+
+security:
+    - OAuth2: [account:read]
