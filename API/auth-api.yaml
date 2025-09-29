@@ -1,0 +1,273 @@
+openapi: 3.0.0
+info:
+  title: Auth Service API
+  description: API tài liệu cho dịch vụ Xác thực và Ủy quyền (Authentication and Authorization) dựa trên lược đồ Auth.
+  version: 1.0.0
+servers:
+  - url: /api/v1
+    description: Môi trường Development/Testing
+tags:
+  - name: Authentication & Sessions # Đã sửa thụt lề
+  - name: Role Management # Đã sửa thụt lề
+  - name: User Management # [Bổ sung]: Thêm lại tag User Management để phân loại /auth/register và /auth/users/me
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    # Định nghĩa Schema cho Đăng ký (Được thêm cho rõ ràng, vì nó được sử dụng trực tiếp trong /auth/register)
+    UserRegistration:
+      type: object
+      required:
+        - username
+        - email
+        - password
+      properties:
+        username:
+          type: string
+          example: john_doe
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        password:
+          type: string
+          format: password
+          example: securepassword123
+
+    UserLogin:
+      type: object
+      required:
+        - email_or_username
+        - password
+      properties:
+        email_or_username:
+          type: string
+          example: user@example.com
+        password:
+          type: string
+          format: password
+          example: securepassword123
+    User:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          example: 101
+        username:
+          type: string
+          example: john_doe
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        created_at:
+          type: string
+          format: date-time
+    Role:
+      type: object
+      properties:
+        role_id:
+          type: integer
+          example: 2
+        role_name:
+          type: string
+          example: Editor
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+          example: USER_NOT_FOUND
+        message:
+          type: string
+          example: Người dùng không tồn tại.
+
+paths:
+  /auth/register:
+    post:
+      tags:
+        - User Management # [Sửa]: Chuyển tag từ Auth & Sessions sang User Management
+      summary: Đăng ký người dùng mới
+      description: Tạo một bản ghi người dùng mới trong auth.users và tạo hash mật khẩu trong auth.user_credentials.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              # Sử dụng lại định nghĩa UserRegistration trong components/schemas
+              $ref: "#/components/schemas/UserRegistration"
+      responses:
+        "201":
+          description: Đăng ký thành công. Trả về thông tin người dùng đã tạo.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Dữ liệu đầu vào không hợp lệ.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: Xung đột (Conflict) - Tên người dùng hoặc Email đã tồn tại.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/login:
+    post:
+      tags:
+        - Authentication & Sessions
+      summary: Đăng nhập người dùng và tạo phiên
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserLogin"
+      responses:
+        "200":
+          description: Đăng nhập thành công, trả về token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiI...
+                  token_type:
+                    type: string
+                    example: Bearer
+                  expires_in:
+                    type: integer
+                    example: 3600
+        "401":
+          description: Thông tin đăng nhập không hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/logout:
+    post:
+      tags:
+        - Authentication & Sessions
+      summary: Đăng xuất người dùng và vô hiệu hóa token
+      security:
+        - BearerAuth: []
+      responses:
+        "204":
+          description: Đăng xuất thành công (Không trả về nội dung)
+        "401":
+          description: Token không hợp lệ
+
+  /auth/users/me:
+    get:
+      tags:
+        - User Management # [Sửa]: Chuyển tag từ Auth & Sessions sang User Management
+      summary: Lấy hồ sơ người dùng đang đăng nhập
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Trả về thông tin người dùng
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Chưa xác thực
+
+  /auth/password/change:
+    post:
+      tags:
+        - Authentication & Sessions
+      summary: Thay đổi mật khẩu người dùng đang đăng nhập
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - old_password
+                - new_password
+              properties:
+                old_password:
+                  type: string
+                  format: password
+                  example: securepassword123
+                new_password:
+                  type: string
+                  format: password
+                  example: newsecurepassword456
+      responses:
+        "204":
+          description: Thay đổi mật khẩu thành công
+        "401":
+          description: Mật khẩu cũ không đúng hoặc chưa xác thực
+
+  /auth/users/{user_id}/roles:
+    get:
+      tags:
+        - Role Management
+      summary: Lấy danh sách vai trò của một người dùng
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID của người dùng
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Danh sách vai trò
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Role"
+        "403":
+          description: Không có quyền truy cập (Chỉ dành cho Admin/Quản lý)
+
+    post:
+      tags:
+        - Role Management
+      summary: Gán một vai trò cho người dùng
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - role_id
+              properties:
+                role_id:
+                  type: integer
+                  example: 3
+      responses:
+        "201":
+          description: Gán vai trò thành công
+        "403":
+          description: Không có quyền truy cập
