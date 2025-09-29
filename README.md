@@ -22,8 +22,10 @@ Lược đồ cơ sở dữ liệu được định nghĩa trong `database.txt`.
 Sơ đồ quan hệ thực thể của cơ sở dữ liệu có sẵn ở đây: [ERD_Diagram_Database.png](ERD_Diagram_Database.png)
 
 Bạn cũng có thể tìm thấy:
--Sơ đồ cơ sở dữ liệu tại liên kết này: https://dbdiagram.io/d/68d376e47c85fb996111338e
--Kiến trúc hệ thống tại liên kết này: https://www.mermaidchart.com/app/projects/a028bd8c-f2c5-4ba0-878b-c607d36fff94/diagrams/9ac2ced2-cf1f-4bc2-acb5-c90fb3c5dac4/version/v0.1/edit
+
+- **Sơ đồ cơ sở dữ liệu tại liên kết này:** https://dbdiagram.io/d/68d376e47c85fb996111338e
+
+- **Kiến trúc hệ thống tại liên kết này:** https://www.mermaidchart.com/app/projects/a028bd8c-f2c5-4ba0-878b-c607d36fff94/diagrams/9ac2ced2-cf1f-4bc2-acb5-c90fb3c5dac4/version/v0.1/edit
 
 ## Làm thế nào để bắt đầu
 
